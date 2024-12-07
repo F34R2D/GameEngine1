@@ -19,6 +19,10 @@ public class PlayerController : MonoBehaviour
 
     public Animator anim;
 
+    public float knockbackLenght;
+    public float knockbackSpeed;
+    private float knockbackCounter;
+
     // Start is called before the first frame update
     void Start()
     {
@@ -30,45 +34,56 @@ public class PlayerController : MonoBehaviour
     {
         isGrounded = Physics2D.OverlapCircle(groundCheckPoint.position, groundCheckRadius, whatIsGround);
         // theRB.velocity = new Vector2( Input.GetAxisRaw("Horizontal") * moveSpeed, theRB.velocity.y);
-        activeSpeed = moveSpeed;
-        if (Input.GetKey(KeyCode.LeftShift))
-        {
-            activeSpeed = runSpeed;
-        }
-        theRB.velocity = new Vector2(Input.GetAxisRaw("Horizontal") * activeSpeed, theRB.velocity.y);
 
-        if (Input.GetButtonDown("Jump"))
+        if (knockbackCounter <= 0)
         {
 
-            if (isGrounded == true)
+
+            activeSpeed = moveSpeed;
+            if (Input.GetKey(KeyCode.LeftShift))
             {
-                Jump();
-                canDoubleJump = true;
-                anim.SetBool("isDoubleJumping" , false);
-
+                activeSpeed = runSpeed;
             }
-            else
+            theRB.velocity = new Vector2(Input.GetAxisRaw("Horizontal") * activeSpeed, theRB.velocity.y);
+
+            if (Input.GetButtonDown("Jump"))
             {
-                if (canDoubleJump == true)
+
+                if (isGrounded == true)
+                {
                     Jump();
+                    canDoubleJump = true;
+                    anim.SetBool("isDoubleJumping", false);
+
+                }
+                else
+                {
+                    if (canDoubleJump == true)
+                        Jump();
                     canDoubleJump = false;
 
-                anim.SetBool("isDoubleJumping", true);
+                    anim.SetBool("isDoubleJumping", true);
+                }
+
+
+
+
+
             }
 
-
-
-
-
+            if (theRB.velocity.x > 0)
+            {
+                transform.localScale = Vector3.one;
+            }
+            if (theRB.velocity.x < 0)
+            {
+                transform.localScale = new Vector3(-1f, 1f, 1f);
+            }
         }
-
-        if (theRB.velocity.x > 0)
+        else
         {
-            transform.localScale = Vector3.one;
-        }
-        if (theRB.velocity.x < 0)
-        {
-            transform.localScale = new Vector3(-1f, 1f, 1f);
+            knockbackCounter -= Time.deltaTime;
+            theRB.velocity = new Vector2(knockbackSpeed * -transform.localScale.x, theRB.velocity.y);
         }
         //handle animations
 
@@ -81,5 +96,12 @@ public class PlayerController : MonoBehaviour
     {
         theRB.velocity = new Vector2(theRB.velocity.x, jumpForce);
 
+    }
+
+    public void Knockback()
+    {
+        theRB.velocity = new Vector2(0f, jumpForce * 0.5f);
+        anim.SetTrigger("isKnockingBack");
+        knockbackCounter = knockbackLenght;
     }
 }
