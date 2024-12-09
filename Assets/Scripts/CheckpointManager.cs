@@ -4,15 +4,44 @@ using UnityEngine;
 
 public class CheckpointManager : MonoBehaviour
 {
+    public Checkpoint[] allCP;
+
+    public Vector3 respawnPosition;
+    private Checkpoint activeCP;
     // Start is called before the first frame update
     void Start()
     {
-        
+        allCP = FindObjectsByType<Checkpoint>(FindObjectsSortMode.None);
+
+        foreach (Checkpoint cp in allCP)
+        {
+            cp.cpMan = this;
+        }
+
+        respawnPosition = FindFirstObjectByType <PlayerController>().transform.position;
     }
 
     // Update is called once per frame
     void Update()
     {
         
+    }
+
+    public void DeactivateAllCheckpoints()
+    {
+        foreach(Checkpoint cp in allCP)
+        {
+            cp.DeactivateCheckpoint();
+        }
+    }
+
+    public void SetActiveCheckpoint(Checkpoint newActiveCP)
+    {
+        DeactivateAllCheckpoints();
+
+        activeCP = newActiveCP;
+
+        respawnPosition = newActiveCP.transform.position;
+
     }
 }
